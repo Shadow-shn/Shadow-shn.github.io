@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Realtime Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+  font-family:system-ui;
+  background:#0f172a;
+  color:white;
+  margin:0;
+}
+.container{
+  max-width:600px;
+  margin:auto;
+  padding:15px;
+}
+#messages{
+  height:70vh;
+  overflow-y:auto;
+  background:#020617;
+  padding:10px;
+  border-radius:10px;
+}
+.msg{
+  margin-bottom:8px;
+}
+.msg b{color:#38bdf8}
+input,button{
+  padding:10px;
+  border:none;
+  border-radius:8px;
+}
+input{
+  width:100%;
+  margin-bottom:8px;
+}
+button{
+  background:#2563eb;
+  color:white;
+  width:100%;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h2>💬 Public Chat</h2>
+
+  <input id="name" placeholder="Your name">
+  <div id="messages"></div>
+  <input id="msg" placeholder="Type message">
+  <button onclick="send()">Send</button>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "PASTE_HERE",
+  authDomain: "PASTE_HERE",
+  projectId: "PASTE_HERE",
+  storageBucket: "PASTE_HERE",
+  messagingSenderId: "PASTE_HERE",
+  appId: "PASTE_HERE"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const col = collection(db,"messages");
+
+const q = query(col, orderBy("time"));
+
+onSnapshot(q, snap=>{
+  const box=document.getElementById("messages");
+  box.innerHTML="";
+  snap.forEach(doc=>{
+    const d=doc.data();
+    box.innerHTML+=`<div class="msg"><b>${d.name}:</b> ${d.text}</div>`;
+  });
+  box.scrollTop=box.scrollHeight;
+});
+
+window.send = async ()=>{
+  const name=document.getElementById("name").value || "Guest";
+  const text=document.getElementById("msg").value;
+  if(!text) return;
+  await addDoc(col,{
+    name,
+    text,
+    time: Date.now()
+  });
+  document.getElementById("msg").value="";
+};
+</script>
+</body>
+</html>
