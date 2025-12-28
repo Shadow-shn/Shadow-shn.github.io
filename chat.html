@@ -1,56 +1,102 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Realtime Chat</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body{
-  font-family:system-ui;
+  margin:0;
+  font-family: system-ui, -apple-system;
   background:#0f172a;
   color:white;
-  margin:0;
 }
-.container{
-  max-width:600px;
+.chat-box{
+  max-width:500px;
   margin:auto;
-  padding:15px;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
 }
-#messages{
-  height:70vh;
+.header{
+  padding:15px;
+  background:#020617;
+  text-align:center;
+  font-weight:600;
+}
+.messages{
+  flex:1;
+  padding:15px;
   overflow-y:auto;
   background:#020617;
-  padding:10px;
-  border-radius:10px;
 }
-.msg{margin-bottom:8px}
-.msg b{color:#38bdf8}
-input,button{
+.msg{
+  max-width:75%;
+  padding:10px 14px;
+  margin-bottom:10px;
+  border-radius:14px;
+  word-wrap:break-word;
+  font-size:.95rem;
+}
+.me{
+  background:#2563eb;
+  margin-left:auto;
+  border-bottom-right-radius:4px;
+}
+.other{
+  background:#1e293b;
+  margin-right:auto;
+  border-bottom-left-radius:4px;
+}
+.name{
+  font-size:.75rem;
+  opacity:.7;
+  margin-bottom:4px;
+}
+.input-area{
   padding:10px;
+  background:#020617;
+}
+input{
+  width:100%;
+  padding:12px;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
+  margin-bottom:8px;
 }
-input{width:100%;margin-bottom:8px}
 button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
   background:#2563eb;
   color:white;
-  width:100%;
+  font-weight:600;
 }
 </style>
 </head>
 
 <body>
-<div class="container">
-  <h2>💬 Public Chat</h2>
-  <input id="name" placeholder="Your name">
-  <div id="messages"></div>
-  <input id="msg" placeholder="Type message">
-  <button onclick="send()">Send</button>
+
+<div class="chat-box">
+  <div class="header">💬 Public Chat</div>
+
+  <div class="input-area">
+    <input id="name" placeholder="Your name">
+  </div>
+
+  <div class="messages" id="messages"></div>
+
+  <div class="input-area">
+    <input id="msg" placeholder="Type message">
+    <button onclick="send()">Send</button>
+  </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } 
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy }
 from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -65,15 +111,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const col = collection(db,"messages");
-
 const q = query(col, orderBy("time"));
 
 onSnapshot(q, snap=>{
   const box=document.getElementById("messages");
   box.innerHTML="";
+  const myName=document.getElementById("name").value;
   snap.forEach(doc=>{
     const d=doc.data();
-    box.innerHTML+=`<div class="msg"><b>${d.name}:</b> ${d.text}</div>`;
+    const div=document.createElement("div");
+    div.className="msg " + (d.name===myName ? "me":"other");
+    div.innerHTML=`<div class="name">${d.name}</div>${d.text}`;
+    box.appendChild(div);
   });
   box.scrollTop=box.scrollHeight;
 });
@@ -90,5 +139,6 @@ window.send = async ()=>{
   document.getElementById("msg").value="";
 };
 </script>
+
 </body>
 </html>
