@@ -25,6 +25,10 @@ body{
   text-align:center;
   font-weight:600;
 }
+.name-area{
+  padding:10px;
+  background:#020617;
+}
 .messages{
   flex:1;
   padding:15px;
@@ -82,7 +86,7 @@ button{
 <div class="chat-box">
   <div class="header">💬 Public Chat</div>
 
-  <div class="input-area">
+  <div class="name-area">
     <input id="name" placeholder="Your name">
   </div>
 
@@ -99,6 +103,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebas
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy }
 from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
+/* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyD6wuDYeftzktN3JiO6HqdxDR316thEzTY",
   authDomain: "shadow-chat-15c3b.firebaseapp.com",
@@ -108,36 +113,64 @@ const firebaseConfig = {
   appId: "1:284971750396:web:05bdc595fcdeb933441879"
 };
 
+/* INIT */
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const col = collection(db,"messages");
 const q = query(col, orderBy("time"));
 
+/* NAME SAVE + LOAD */
+const nameInput = document.getElementById("name");
+nameInput.value = localStorage.getItem("chatName") || "";
+
+nameInput.oninput = () => {
+  localStorage.setItem("chatName", nameInput.value);
+};
+
+/* LOAD MESSAGES */
 onSnapshot(q, snap=>{
   const box=document.getElementById("messages");
   box.innerHTML="";
-  const myName=document.getElementById("name").value;
+  const myName = localStorage.getItem("chatName");
+
   snap.forEach(doc=>{
     const d=doc.data();
     const div=document.createElement("div");
     div.className="msg " + (d.name===myName ? "me":"other");
-    div.innerHTML=`<div class="name">${d.name}</div>${d.text}`;
+
+    const time = new Date(d.time).toLocaleTimeString([],{
+      hour:"2-digit", minute:"2-digit"
+    });
+
+    div.innerHTML = `
+      <div class="name">${d.name} • ${time}</div>
+      ${d.text}
+    `;
     box.appendChild(div);
   });
-  box.scrollTop=box.scrollHeight;
+
+  box.scrollTop = box.scrollHeight;
 });
 
+/* SEND MESSAGE */
 window.send = async ()=>{
-  const name=document.getElementById("name").value || "Guest";
-  const text=document.getElementById("msg").value;
+  const name = localStorage.getItem("chatName") || "Guest";
+  const text = document.getElementById("msg").value;
   if(!text) return;
+
   await addDoc(col,{
     name,
     text,
     time: Date.now()
   });
+
   document.getElementById("msg").value="";
 };
+
+/* ENTER TO SEND */
+document.getElementById("msg").addEventListener("keypress", e=>{
+  if(e.key==="Enter") send();
+});
 </script>
 
 </body>
