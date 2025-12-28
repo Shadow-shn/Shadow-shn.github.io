@@ -20,10 +20,14 @@ body{
   flex-direction:column;
 }
 .header{
-  padding:15px;
+  padding:12px;
   background:#020617;
   text-align:center;
   font-weight:600;
+}
+.status{
+  font-size:.8rem;
+  opacity:.7;
 }
 .name-area{
   padding:10px;
@@ -40,7 +44,6 @@ body{
   padding:10px 14px;
   margin-bottom:10px;
   border-radius:14px;
-  word-wrap:break-word;
   font-size:.95rem;
 }
 .me{
@@ -57,6 +60,11 @@ body{
   font-size:.75rem;
   opacity:.7;
   margin-bottom:4px;
+}
+.typing{
+  font-size:.8rem;
+  opacity:.7;
+  margin:5px 0;
 }
 .input-area{
   padding:10px;
@@ -84,13 +92,17 @@ button{
 <body>
 
 <div class="chat-box">
-  <div class="header">💬 Public Chat</div>
+  <div class="header">
+    💬 Public Chat
+    <div class="status" id="onlineStatus">🟢 0 online</div>
+  </div>
 
   <div class="name-area">
     <input id="name" placeholder="Enter your name (required)">
   </div>
 
   <div class="messages" id="messages"></div>
+  <div class="typing" id="typing"></div>
 
   <div class="input-area">
     <input id="msg" placeholder="Type message">
@@ -100,7 +112,7 @@ button{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy }
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, setDoc, doc, deleteDoc }
 from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
 /* 🔥 FIREBASE CONFIG */
@@ -116,55 +128,98 @@ const firebaseConfig = {
 /* INIT */
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const col = collection(db,"messages");
-const q = query(col, orderBy("time"));
 
-/* NAME SAVE + LOAD */
+/* COLLECTIONS */
+const msgCol = collection(db,"messages");
+const onlineCol = collection(db,"online");
+const typingCol = collection(db,"typing");
+
+/* NAME SAVE */
 const nameInput = document.getElementById("name");
 nameInput.value = localStorage.getItem("chatName") || "";
+nameInput.oninput = () => localStorage.setItem("chatName", nameInput.value);
 
-nameInput.oninput = () => {
-  localStorage.setItem("chatName", nameInput.value);
-};
+/* ONLINE STATUS */
+const onlineId = Math.random().toString(36).slice(2);
 
-/* LOAD MESSAGES */
+setInterval(async ()=>{
+  const name = localStorage.getItem("chatName");
+  if(name){
+    await setDoc(doc(onlineCol, onlineId),{
+      name,
+      time: Date.now()
+    });
+  }
+}, 5000);
+
+window.addEventListener("beforeunload",()=>{
+  deleteDoc(doc(onlineCol, onlineId));
+});
+
+onSnapshot(onlineCol, snap=>{
+  document.getElementById("onlineStatus").innerText =
+    "🟢 " + snap.size + " online";
+});
+
+/* MESSAGES */
+const q = query(msgCol, orderBy("time"));
 onSnapshot(q, snap=>{
   const box=document.getElementById("messages");
   box.innerHTML="";
   const myName = localStorage.getItem("chatName");
 
-  snap.forEach(doc=>{
-    const d=doc.data();
+  snap.forEach(docu=>{
+    const d=docu.data();
     const div=document.createElement("div");
     div.className="msg " + (d.name===myName ? "me":"other");
 
-    const time = new Date(d.time).toLocaleTimeString([],{
+    const time=new Date(d.time).toLocaleTimeString([],{
       hour:"2-digit", minute:"2-digit"
     });
 
-    div.innerHTML = `
-      <div class="name">${d.name} • ${time}</div>
-      ${d.text}
-    `;
+    div.innerHTML=`<div class="name">${d.name} • ${time}</div>${d.text}`;
     box.appendChild(div);
   });
 
-  box.scrollTop = box.scrollHeight;
+  box.scrollTop=box.scrollHeight;
 });
 
-/* SEND MESSAGE (NAME REQUIRED) */
+/* TYPING INDICATOR */
+let typingTimeout;
+document.getElementById("msg").addEventListener("input",async ()=>{
+  const name=localStorage.getItem("chatName");
+  if(!name) return;
+
+  await setDoc(doc(typingCol,name),{typing:true});
+
+  clearTimeout(typingTimeout);
+  typingTimeout=setTimeout(()=>{
+    deleteDoc(doc(typingCol,name));
+  },1500);
+});
+
+onSnapshot(typingCol,snap=>{
+  const box=document.getElementById("typing");
+  const myName=localStorage.getItem("chatName");
+  const arr=[];
+  snap.forEach(d=>{
+    if(d.id!==myName) arr.push(d.id);
+  });
+  box.innerText = arr.length ? `${arr.join(", ")} is typing...` : "";
+});
+
+/* SEND MESSAGE */
 window.send = async ()=>{
-  const name = localStorage.getItem("chatName");
-  const text = document.getElementById("msg").value;
+  const name=localStorage.getItem("chatName");
+  const text=document.getElementById("msg").value;
 
   if(!name || name.trim()===""){
     alert("Please enter your name first");
     return;
   }
-
   if(!text) return;
 
-  await addDoc(col,{
+  await addDoc(msgCol,{
     name,
     text,
     time: Date.now()
@@ -174,7 +229,7 @@ window.send = async ()=>{
 };
 
 /* ENTER TO SEND */
-document.getElementById("msg").addEventListener("keypress", e=>{
+document.getElementById("msg").addEventListener("keypress",e=>{
   if(e.key==="Enter") send();
 });
 </script>
