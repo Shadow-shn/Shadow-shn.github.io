@@ -23,19 +23,14 @@ body{
   padding:10px;
   border-radius:10px;
 }
-.msg{
-  margin-bottom:8px;
-}
+.msg{margin-bottom:8px}
 .msg b{color:#38bdf8}
 input,button{
   padding:10px;
   border:none;
   border-radius:8px;
 }
-input{
-  width:100%;
-  margin-bottom:8px;
-}
+input{width:100%;margin-bottom:8px}
 button{
   background:#2563eb;
   color:white;
@@ -47,26 +42,24 @@ button{
 <body>
 <div class="container">
   <h2>💬 Public Chat</h2>
-
   <input id="name" placeholder="Your name">
   <div id="messages"></div>
   <input id="msg" placeholder="Type message">
   <button onclick="send()">Send</button>
 </div>
 
-<!-- Firebase -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "PASTE_HERE",
-  authDomain: "PASTE_HERE",
-  projectId: "PASTE_HERE",
-  storageBucket: "PASTE_HERE",
-  messagingSenderId: "PASTE_HERE",
-  appId: "PASTE_HERE"
+  apiKey: "AIzaSyD6wuDYeftzktN3JiO6HqdxDR316thEzTY",
+  authDomain: "shadow-chat-15c3b.firebaseapp.com",
+  projectId: "shadow-chat-15c3b",
+  storageBucket: "shadow-chat-15c3b.firebasestorage.app",
+  messagingSenderId: "284971750396",
+  appId: "1:284971750396:web:05bdc595fcdeb933441879"
 };
 
 const app = initializeApp(firebaseConfig);
