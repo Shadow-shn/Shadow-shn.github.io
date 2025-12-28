@@ -1,10 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>My First Website</title>
+  <meta charset="UTF-8" />
+  <title>Shadow-shn | Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont;
+      background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+      color:#fff;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+      text-align:center;
+    }
+    .card{
+      background: rgba(255,255,255,0.08);
+      padding:40px;
+      border-radius:16px;
+      backdrop-filter: blur(10px);
+      max-width:420px;
+    }
+    h1{
+      font-size:2.2rem;
+      margin-bottom:10px;
+    }
+    p{
+      opacity:.9;
+    }
+    .tag{
+      margin-top:20px;
+      font-size:.9rem;
+      opacity:.7;
+    }
+  </style>
 </head>
 <body>
-  <h1>Assalamu Alaikum 🌙</h1>
-  <p>This is my first GitHub Pages website.</p>
+  <div class="card">
+    <h1>Assalamu Alaikum 🌙</h1>
+    <p>Welcome to my first GitHub Pages website.</p>
+    <div class="tag">Built with ❤️ on GitHub Pages</div>
+  </div>
 </body>
 </html>
+
