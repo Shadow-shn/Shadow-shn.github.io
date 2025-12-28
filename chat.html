@@ -87,7 +87,7 @@ button{
   <div class="header">💬 Public Chat</div>
 
   <div class="name-area">
-    <input id="name" placeholder="Your name">
+    <input id="name" placeholder="Enter your name (required)">
   </div>
 
   <div class="messages" id="messages"></div>
@@ -152,10 +152,16 @@ onSnapshot(q, snap=>{
   box.scrollTop = box.scrollHeight;
 });
 
-/* SEND MESSAGE */
+/* SEND MESSAGE (NAME REQUIRED) */
 window.send = async ()=>{
-  const name = localStorage.getItem("chatName") || "Guest";
+  const name = localStorage.getItem("chatName");
   const text = document.getElementById("msg").value;
+
+  if(!name || name.trim()===""){
+    alert("Please enter your name first");
+    return;
+  }
+
   if(!text) return;
 
   await addDoc(col,{
